@@ -1,0 +1,116 @@
+---
+title: "HW07"
+author: "Omkar Sinha"
+date: "11/11/2021"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+## Load the data
+rm(list=ls())
+file <- file.choose()
+
+bc_temp <- read.csv(file)
+summary(bc_temp) 
+summary(bc_temp$diagnosis)
+table(bc_temp$diagnosis)
+```
+
+```{r}
+mmnorm2 <- function(x)
+{ z <- ((x-min(x))/(max(x)-min(x)))
+return(z)                              
+}
+
+myvector <- 1:20
+mmnorm2(myvector)
+
+bc <- data.frame(id=as.character(bc_temp$id)
+                 ,diagnosis=as.integer(ifelse((bc_temp$diagnosis=="M"),1,0))  
+                 ,radius_mean =mmnorm2(	bc_temp$radius_mean)
+                 ,texture_mean=mmnorm2(bc_temp$texture_mean)
+                 ,perimeter_mean=mmnorm2(bc_temp$perimeter_mean)
+                 ,area_mean=mmnorm2(bc_temp$area_mean)
+                 ,smoothness_mean=mmnorm2(bc_temp$smoothness_mean)
+                 ,compactness_mean=mmnorm2(bc_temp$compactness_mean)
+                 ,concavity_mean=mmnorm2(bc_temp$concavity_mean)
+                 ,concave.points_mean=mmnorm2(bc_temp$concave.points_mean)
+                 ,symmetry_mean=mmnorm2(bc_temp$symmetry_mean)
+                 ,fractal_dimension_mean=mmnorm2(bc_temp$fractal_dimension_mean)
+                 ,radius_se=mmnorm2(bc_temp$radius_se)
+                 ,perimeter_se=mmnorm2(bc_temp$perimeter_se)
+                 ,texture_se=mmnorm2(bc_temp$texture_se)
+                 ,area_se=mmnorm2(bc_temp$area_se)
+                 ,smoothness_se=mmnorm2(bc_temp$smoothness_se)
+                 ,compactness_se=mmnorm2(bc_temp$compactness_se)
+                 ,concavity_se=mmnorm2(bc_temp$concavity_se)
+                 ,concave.points_se =mmnorm2(bc_temp$concave.points_se)
+                 ,symmetry_se=mmnorm2(bc_temp$symmetry_se)
+                 ,fractal_dimension_se=mmnorm2(bc_temp$fractal_dimension_se)
+                 ,radius_worst=mmnorm2(bc_temp$radius_worst)
+                 ,texture_worst=mmnorm2(bc_temp$texture_worst)
+                 ,perimeter_worst=mmnorm2(bc_temp$perimeter_worst)
+                 ,area_worst=mmnorm2(bc_temp$area_worst)
+                 ,smoothness_worst=mmnorm2(bc_temp$smoothness_worst)
+                 ,compactness_worst=mmnorm2(bc_temp$compactness_worst)
+                 ,concavity_worst=mmnorm2(bc_temp$concavity_worst)
+                 ,concave.points_worst=mmnorm2(bc_temp$concave.points_worst)
+                 ,symmetry_worst=mmnorm2(bc_temp$symmetry_worst)
+                 ,fractal_dimension_worst=mmnorm2(bc_temp$fractal_dimension_worst)
+)  
+```
+
+
+
+```{r}
+index <- sort(sample(nrow(bc),round(.30*nrow(bc ))))
+training <- bc[-index,]
+test <- bc[index,]
+```
+
+
+
+
+```{r}
+library("neuralnet")  
+
+net_bc  <- neuralnet( diagnosis~ radius_mean+texture_mean+perimeter_mean+                      +
+                        area_mean+smoothness_mean+compactness_mean+
+                        concavity_mean+concave.points_mean+
+                        symmetry_mean+fractal_dimension_mean+
+                        radius_se+texture_se+perimeter_se+
+                        area_se+smoothness_se+compactness_se+
+                        concavity_se+concave.points_se+
+                        symmetry_se+fractal_dimension_se+
+                        radius_worst+texture_worst+perimeter_worst+
+                        area_worst+smoothness_worst+
+                        compactness_worst+concavity_worst+
+                        concave.points_worst+symmetry_worst+
+                        fractal_dimension_worst
+                      ,training, hidden=15, threshold=0.01)
+
+
+plot(net_bc)
+```
+
+
+
+```{r}
+net_bc_results <- compute(net_bc, test[,c(-1,-2)])
+ANN=as.numeric(net_bc_results$net.result)
+ANN_cat <- ifelse(ANN<.3,0,1)
+
+table(Actual=test$diagnosis,ANN_cat)
+
+wrong <- ( test$diagnosis!=ANN_cat)
+rate <- sum(wrong)/length(wrong)
+rate
+
+```
+
+
