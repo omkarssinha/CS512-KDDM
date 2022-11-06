@@ -1,0 +1,60 @@
+---
+title: "HW06_RF"
+author: "Omkar Sinha"
+date: "11/11/2021"
+output: pdf_document
+---
+
+```{r}
+## Load the data
+rm(list=ls())
+file<-file.choose()
+```
+
+
+
+
+```{r}
+bc_RF<-  read.csv(file,na.strings = "?",colClasses=c("Sample"="character",
+                                        "F1"="factor","F2"="factor","F3"="factor",
+                                        "F4"="factor","F5"="factor","F6"="character",
+                                        "F7"="factor","F8"="factor","F9"="factor",
+                                        "Class"="factor"))
+summary(bc_RF$F6)
+```
+
+
+
+```{r}
+bc_RF[is.na(bc_RF$F6),"F6"]<- "M" 
+
+bc<-data.frame(bc_RF[,1:6],F6=as.factor(bc_RF$F6),bc_RF[,8:11])
+```
+
+
+
+```{r}
+index<-sort(sample(nrow(bc),round(.30*nrow(bc))))
+training<-bc [-index,]
+test<-bc[index,]
+```
+
+
+
+
+```{r}
+##installing required package
+library(randomForest)
+fit <- randomForest( Class~., data=training[,-1], importance=TRUE, ntree=1000)
+importance(fit)
+varImpPlot(fit)
+dev.off()
+Prediction <- predict(fit, test[,-1])
+table(actual=test$Class,Prediction)
+```
+```{r}
+wrong<- (test$Class!=Prediction )
+error_rate<-sum(wrong)/length(wrong)
+error_rate
+```
+

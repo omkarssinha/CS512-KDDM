@@ -1,0 +1,77 @@
+---
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+
+
+#################################################
+
+#  University     : Stevens Institute of Technology
+#  Project        : HW_06 C50
+#  Purpose        : Homework
+#  First Name     : Omkar
+#  Last Name      : Sinha
+#  CWId			      : 10468312
+#  Date           : 11/10/2021
+
+#################################################
+
+
+
+```{r}
+## Load the data
+
+rm(list=ls())
+file<-file.choose()
+bc_C50 <-  read.csv(file,na.strings = "?",colClasses=c("Sample"="character",
+                                                       "F1"="factor","F2"="factor","F3"="factor",
+                                                       "F4"="factor","F5"="factor","F6"="factor",
+                                                       "F7"="factor","F8"="factor","F9"="factor",
+                                                       "Class"="factor"))
+```
+
+
+```{r}
+```
+
+
+```{r}
+##installing required package
+library(C50)
+library(ggplot2)
+```
+
+
+```{r}
+index<-sort(sample(nrow(bc_C50),round(.30*nrow(bc_C50))))
+training<-bc_C50[-index,]
+test<-bc_C50[index,]
+```
+
+
+```{r}
+C50_class <- C5.0(Class~.,data=training[,-1])
+```
+
+
+```{r}
+summary(C50_class)
+```
+
+
+```{r}
+```
+
+
+```{r}
+plot(C50_class)
+C50_predict<-predict(C50_class ,test , type="class")
+table(actual=test[,"Class"],C50=C50_predict)
+wrong<- (test[,"Class"]!=C50_predict)
+c50_rate<-sum(wrong)/length(test[,"Class"])
+c50_rate
+```
+
